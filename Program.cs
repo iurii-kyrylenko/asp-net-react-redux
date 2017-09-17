@@ -20,6 +20,9 @@ namespace reactredux
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                // .UseKestrel(options => {
+                //     options.Listen(System.Net.IPAddress.Loopback, 3000);
+                // })
                 .Build();
     }
 }
