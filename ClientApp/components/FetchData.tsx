@@ -8,19 +8,26 @@ import * as WeatherForecastsState from '../store/WeatherForecasts';
 type WeatherForecastProps =
     WeatherForecastsState.WeatherForecastsState        // ... state we've requested from the Redux store
     & typeof WeatherForecastsState.actionCreators      // ... plus action creators we've requested
-    & RouteComponentProps<{ startDateIndex: string }>; // ... plus incoming routing parameters
+    & RouteComponentProps<{ startDateIndex: string }>  // ... plus incoming routing parameters
+    & { ssr: boolean };
 
 class FetchData extends React.Component<WeatherForecastProps, {}> {
     componentWillMount() {
-        // This method runs when the component is first added to the page
-        let startDateIndex = parseInt(this.props.match.params.startDateIndex) || 0;
-        this.props.requestWeatherForecasts(startDateIndex);
+        // This method runs when the component is about to be added to the page.
+        if (this.props.ssr) {
+            // Dispatch actions only on the server.
+            let startDateIndex = parseInt(this.props.match.params.startDateIndex) || 0;
+            this.props.requestWeatherForecasts(startDateIndex);
+        }
     }
 
-    componentWillReceiveProps(nextProps: WeatherForecastProps) {
-        // This method runs when incoming props (e.g., route params) change
-        let startDateIndex = parseInt(nextProps.match.params.startDateIndex) || 0;
-        this.props.requestWeatherForecasts(startDateIndex);
+    componentDidUpdate(prevProps: WeatherForecastProps) {
+        // This method runs on the client side when the component has been rendered.
+        const prevIndex = prevProps.match.params.startDateIndex;
+        const currIndex = this.props.match.params.startDateIndex;
+        if(prevIndex !== currIndex) {
+            this.props.requestWeatherForecasts(parseInt(currIndex) || 0);
+        }
     }
 
     public render() {
